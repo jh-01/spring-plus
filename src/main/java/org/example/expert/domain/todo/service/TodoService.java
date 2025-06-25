@@ -6,6 +6,7 @@ import org.example.expert.client.WeatherClient;
 import org.example.expert.domain.common.dto.AuthUser;
 import org.example.expert.domain.common.exception.InvalidRequestException;
 import org.example.expert.domain.todo.dto.request.TodoSaveRequest;
+import org.example.expert.domain.todo.dto.request.TodoSearchRequest;
 import org.example.expert.domain.todo.dto.response.TodoResponse;
 import org.example.expert.domain.todo.dto.response.TodoSaveResponse;
 import org.example.expert.domain.todo.entity.Todo;
@@ -15,8 +16,12 @@ import org.example.expert.domain.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -48,10 +53,30 @@ public class TodoService {
         );
     }
 
-    public Page<TodoResponse> getTodos(int page, int size) {
-        Pageable pageable = PageRequest.of(page - 1, size);
+    public Page<TodoResponse> getTodos(TodoSearchRequest todoSearchRequest) {
+        Pageable pageable = PageRequest.of(
+                todoSearchRequest.getPage() - 1,
+                todoSearchRequest.getSize(),
+                Sort.by(Sort.Direction.DESC, "modifiedAt")
+        );
+        Specification specification = Specification.where(null);
 
-        Page<Todo> todos = todoRepository.findAllByOrderByModifiedAtDesc(pageable);
+        String weather = todoSearchRequest.getWeather();
+        LocalDateTime since = todoSearchRequest.getSince();
+        LocalDateTime until = todoSearchRequest.getUntil();
+
+        // 조건이 존재하는지 확인
+        if(weather != null){
+            specification = specification.and((root, query, cb) -> cb.equal(root.get("weather"), weather));
+        }
+        if(since != null){
+            specification = specification.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("modifiedAt"), since));
+        }
+        if (until != null) {
+            specification = specification.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("modifiedAt"), until));
+        }
+
+        Page<Todo> todos = todoRepository.findAll(specification, pageable);
 
         return todos.map(todo -> new TodoResponse(
                 todo.getId(),
