@@ -1,14 +1,15 @@
 package org.example.expert.domain.todo.entity;
 
+import com.querydsl.core.annotations.QueryProjection;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.expert.domain.comment.entity.Comment;
 import org.example.expert.domain.common.entity.Timestamped;
 import org.example.expert.domain.manager.entity.Manager;
 import org.example.expert.domain.user.entity.User;
-import org.hibernate.annotations.Cascade;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +17,8 @@ import java.util.List;
 @Entity
 @NoArgsConstructor
 @Table(name = "todos")
+@Builder
+@AllArgsConstructor
 public class Todo extends Timestamped {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,5 +43,16 @@ public class Todo extends Timestamped {
         this.weather = weather;
         this.user = user;
         this.managers.add(new Manager(user, this));
+    }
+
+    // Q클래스 용 생성자
+    @QueryProjection
+    public Todo(Long id, String title, String contents, String weather, User user) {
+        this.id = id;
+        this.title = title;
+        this.contents = contents;
+        this.weather = weather;
+        this.user = user;
+        // this.managers.add(new Manager(user, this));
     }
 }
