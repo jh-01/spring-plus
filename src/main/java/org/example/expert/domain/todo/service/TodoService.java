@@ -8,6 +8,7 @@ import org.example.expert.domain.common.exception.InvalidRequestException;
 import org.example.expert.domain.manager.entity.Manager;
 import org.example.expert.domain.manager.repository.ManagerRepository;
 import org.example.expert.domain.todo.dto.request.TodoSaveRequest;
+import org.example.expert.domain.todo.dto.request.TodoSearchRequest;
 import org.example.expert.domain.todo.dto.response.TodoResponse;
 import org.example.expert.domain.todo.dto.response.TodoSaveResponse;
 import org.example.expert.domain.todo.entity.Todo;
@@ -59,12 +60,12 @@ public class TodoService {
                 savedTodo.getTitle(),
                 savedTodo.getContents(),
                 weather,
-                new UserResponse(user.getId(), user.getEmail())
+                new UserResponse(user.getId(), user.getEmail(), user.getNickname())
         );
     }
 
-    public Page<TodoResponse> getTodos(int page, int size) {
-        Pageable pageable = PageRequest.of(page - 1, size);
+    public Page<TodoResponse> getTodos(TodoSearchRequest todoSearchRequest) {
+        Pageable pageable = PageRequest.of(todoSearchRequest.getPage() - 1, todoSearchRequest.getSize());
 
         Page<Todo> todos = todoRepository.findAllByOrderByModifiedAtDesc(pageable);
 
@@ -73,7 +74,7 @@ public class TodoService {
                 todo.getTitle(),
                 todo.getContents(),
                 todo.getWeather(),
-                new UserResponse(todo.getUser().getId(), todo.getUser().getEmail()),
+                new UserResponse(todo.getUser().getId(), todo.getUser().getEmail(), todo.getUser().getNickname()),
                 todo.getCreatedAt(),
                 todo.getModifiedAt()
         ));
@@ -90,7 +91,7 @@ public class TodoService {
                 todo.getTitle(),
                 todo.getContents(),
                 todo.getWeather(),
-                new UserResponse(user.getId(), user.getEmail()),
+                new UserResponse(user.getId(), user.getEmail(), user.getNickname()),
                 todo.getCreatedAt(),
                 todo.getModifiedAt()
         );

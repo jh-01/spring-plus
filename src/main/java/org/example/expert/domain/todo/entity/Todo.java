@@ -55,15 +55,4 @@ public class Todo extends Timestamped {
         this.user = user;
         // this.managers.add(new Manager(user, this));
     }
-
-    // Q클래스 용 생성자
-    @QueryProjection
-    public Todo(Long id, String title, String contents, String weather, User user) {
-        this.id = id;
-        this.title = title;
-        this.contents = contents;
-        this.weather = weather;
-        this.user = user;
-        // this.managers.add(new Manager(user, this));
-    }
 }
