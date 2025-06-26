@@ -7,10 +7,12 @@ import org.example.expert.domain.common.dto.AuthUser;
 import org.example.expert.domain.common.exception.InvalidRequestException;
 import org.example.expert.domain.manager.entity.Manager;
 import org.example.expert.domain.manager.repository.ManagerRepository;
+import org.example.expert.domain.todo.dto.request.TodoPageRequest;
 import org.example.expert.domain.todo.dto.request.TodoSaveRequest;
 import org.example.expert.domain.todo.dto.request.TodoSearchRequest;
 import org.example.expert.domain.todo.dto.response.TodoResponse;
 import org.example.expert.domain.todo.dto.response.TodoSaveResponse;
+import org.example.expert.domain.todo.dto.response.TodoSearchResponse;
 import org.example.expert.domain.todo.entity.Todo;
 import org.example.expert.domain.todo.repository.TodoRepository;
 import org.example.expert.domain.user.dto.response.UserResponse;
@@ -23,6 +25,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -64,8 +68,8 @@ public class TodoService {
         );
     }
 
-    public Page<TodoResponse> getTodos(TodoSearchRequest todoSearchRequest) {
-        Pageable pageable = PageRequest.of(todoSearchRequest.getPage() - 1, todoSearchRequest.getSize());
+    public Page<TodoResponse> getTodos(TodoPageRequest todoPageRequest) {
+        Pageable pageable = PageRequest.of(todoPageRequest.getPage() - 1, todoPageRequest.getSize());
 
         Page<Todo> todos = todoRepository.findAllByOrderByModifiedAtDesc(pageable);
 
@@ -95,5 +99,12 @@ public class TodoService {
                 todo.getCreatedAt(),
                 todo.getModifiedAt()
         );
+    }
+
+    public Page<TodoSearchResponse> searchTodos(TodoSearchRequest todoSearchRequest) {
+        Pageable pageable = PageRequest.of(todoSearchRequest.getPage() - 1, todoSearchRequest.getSize());
+
+        Page<TodoSearchResponse> todoResponsePage = todoRepository.findAllByOrderByModifiedAtDesc(pageable, todoSearchRequest);
+        return todoResponsePage;
     }
 }

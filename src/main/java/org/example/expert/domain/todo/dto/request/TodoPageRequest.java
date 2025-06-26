@@ -2,15 +2,15 @@ package org.example.expert.domain.todo.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class TodoSearchRequest {
+public class TodoPageRequest {
     private int page = 1;
     private int size = 10;
-    private String title;
+    private String weather;
     private LocalDateTime since;
     private LocalDateTime until;
-    private String managerName;
 }
