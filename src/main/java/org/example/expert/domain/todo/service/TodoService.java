@@ -1,9 +1,12 @@
 package org.example.expert.domain.todo.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.expert.client.WeatherClient;
 import org.example.expert.domain.common.dto.AuthUser;
 import org.example.expert.domain.common.exception.InvalidRequestException;
+import org.example.expert.domain.manager.entity.Manager;
+import org.example.expert.domain.manager.repository.ManagerRepository;
 import org.example.expert.domain.todo.dto.request.TodoSaveRequest;
 import org.example.expert.domain.todo.dto.response.TodoResponse;
 import org.example.expert.domain.todo.dto.response.TodoSaveResponse;
@@ -11,22 +14,32 @@ import org.example.expert.domain.todo.entity.Todo;
 import org.example.expert.domain.todo.repository.TodoRepository;
 import org.example.expert.domain.user.dto.response.UserResponse;
 import org.example.expert.domain.user.entity.User;
+import org.example.expert.domain.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class TodoService {
 
     private final TodoRepository todoRepository;
+    private final UserRepository userRepository;
     private final WeatherClient weatherClient;
+    private final ManagerRepository managerRepository;
 
     public TodoSaveResponse saveTodo(AuthUser authUser, TodoSaveRequest todoSaveRequest) {
-        User user = User.fromAuthUser(authUser);
+        if(authUser.getId() == null) {
+            throw new IllegalStateException("AuthUser ID is null");
+        }
+        User user = userRepository.findById(authUser.getId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         String weather = weatherClient.getTodayWeather();
 
@@ -37,6 +50,9 @@ public class TodoService {
                 user
         );
         Todo savedTodo = todoRepository.save(newTodo);
+
+        Manager manager = new Manager(user, savedTodo);
+        managerRepository.save(manager);
 
         return new TodoSaveResponse(
                 savedTodo.getId(),

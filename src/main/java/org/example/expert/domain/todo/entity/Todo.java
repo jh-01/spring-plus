@@ -27,7 +27,7 @@ public class Todo extends Timestamped {
     private String contents;
     private String weather;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -42,7 +42,7 @@ public class Todo extends Timestamped {
         this.contents = contents;
         this.weather = weather;
         this.user = user;
-        this.managers.add(new Manager(user, this));
+        // this.managers.add(new Manager(user, this));
     }
 
     // Q클래스 용 생성자
