@@ -2,7 +2,8 @@ package org.example.expert.domain.todo.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.expert.client.WeatherClient;
+import org.example.expert.domain.manager.dto.response.ManagerResponse;
+import org.example.expert.global.client.WeatherClient;
 import org.example.expert.domain.common.dto.AuthUser;
 import org.example.expert.domain.common.exception.InvalidRequestException;
 import org.example.expert.domain.manager.entity.Manager;
@@ -18,11 +19,11 @@ import org.example.expert.domain.todo.repository.TodoRepository;
 import org.example.expert.domain.user.dto.response.UserResponse;
 import org.example.expert.domain.user.entity.User;
 import org.example.expert.domain.user.repository.UserRepository;
+import org.example.expert.global.exception.CustomException;
+import org.example.expert.global.exception.ErrorType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,8 +44,10 @@ public class TodoService {
         if(authUser.getId() == null) {
             throw new IllegalStateException("AuthUser ID is null");
         }
+        log.info("authUser: {}", authUser);
+        log.info("todoSaveRequest: {}", todoSaveRequest);
         User user = userRepository.findById(authUser.getId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new CustomException(ErrorType.USER_NOT_FOUND));
 
         String weather = weatherClient.getTodayWeather();
 
@@ -73,12 +76,23 @@ public class TodoService {
 
         Page<Todo> todos = todoRepository.findAllByOrderByModifiedAtDesc(pageable);
 
+
         return todos.map(todo -> new TodoResponse(
                 todo.getId(),
                 todo.getTitle(),
                 todo.getContents(),
                 todo.getWeather(),
                 new UserResponse(todo.getUser().getId(), todo.getUser().getEmail(), todo.getUser().getNickname()),
+                todo.getManagers().stream().map(
+                        manager -> new ManagerResponse(
+                                manager.getId(),
+                                new UserResponse (
+                                        manager.getUser().getId(),
+                                        manager.getUser().getEmail(),
+                                        manager.getUser().getNickname()
+                                )
+                        )
+                ).toList(),
                 todo.getCreatedAt(),
                 todo.getModifiedAt()
         ));
@@ -86,7 +100,7 @@ public class TodoService {
 
     public TodoResponse getTodo(long todoId) {
         Todo todo = todoRepository.findByIdWithUser(todoId)
-                .orElseThrow(() -> new InvalidRequestException("Todo not found"));
+                .orElseThrow(() -> new CustomException(ErrorType.TODO_NOT_FOUND));
 
         User user = todo.getUser();
 
@@ -96,6 +110,12 @@ public class TodoService {
                 todo.getContents(),
                 todo.getWeather(),
                 new UserResponse(user.getId(), user.getEmail(), user.getNickname()),
+                todo.getManagers().stream().map(
+                        manager -> new ManagerResponse(
+                                manager.getId(),
+                                new UserResponse(manager.getUser().getId(), manager.getUser().getEmail(), manager.getUser().getNickname())
+                        )
+                ).toList(),
                 todo.getCreatedAt(),
                 todo.getModifiedAt()
         );

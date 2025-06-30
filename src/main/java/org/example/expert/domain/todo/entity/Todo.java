@@ -34,7 +34,7 @@ public class Todo extends Timestamped {
     @OneToMany(mappedBy = "todo", cascade = CascadeType.REMOVE)
     private List<Comment> comments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "todo", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "todo", cascade = CascadeType.PERSIST)
     private List<Manager> managers = new ArrayList<>();
 
     public Todo(String title, String contents, String weather, User user) {
@@ -42,7 +42,7 @@ public class Todo extends Timestamped {
         this.contents = contents;
         this.weather = weather;
         this.user = user;
-        // this.managers.add(new Manager(user, this));
+//        this.managers = List.of(new Manager(user, this));
     }
 
     // Q클래스 용 생성자
@@ -53,6 +53,6 @@ public class Todo extends Timestamped {
         this.contents = contents;
         this.weather = weather;
         this.user = user;
-        // this.managers.add(new Manager(user, this));
+//        this.managers = List.of(new Manager(user, this));
     }
 }
