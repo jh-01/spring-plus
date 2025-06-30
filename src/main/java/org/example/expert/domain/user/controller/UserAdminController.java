@@ -1,8 +1,10 @@
 package org.example.expert.domain.user.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.expert.domain.log.entity.LogType;
 import org.example.expert.domain.user.dto.request.UserRoleChangeRequest;
 import org.example.expert.domain.user.service.UserAdminService;
+import org.example.expert.global.log.annotation.LogWrite;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;

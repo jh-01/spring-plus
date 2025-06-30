@@ -2,6 +2,7 @@ package org.example.expert.domain.todo.dto.response;
 
 import lombok.Getter;
 import org.example.expert.domain.user.dto.response.UserResponse;
+import java.util.List;
 
 @Getter
 public class TodoSaveResponse {
@@ -11,6 +12,7 @@ public class TodoSaveResponse {
     private final String contents;
     private final String weather;
     private final UserResponse user;
+    private final List<UserResponse> managers;
 
     public TodoSaveResponse(Long id, String title, String contents, String weather, UserResponse user) {
         this.id = id;
@@ -18,5 +20,6 @@ public class TodoSaveResponse {
         this.contents = contents;
         this.weather = weather;
         this.user = user;
+        this.managers = List.of(user);
     }
 }
