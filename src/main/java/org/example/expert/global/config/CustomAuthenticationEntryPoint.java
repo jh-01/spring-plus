@@ -1,4 +1,4 @@
-package org.example.expert.global.config.config;
+package org.example.expert.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;

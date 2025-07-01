@@ -1,4 +1,4 @@
-package org.example.expert.global.config.config;
+package org.example.expert.global.config;
 
 //@Configuration
 //@RequiredArgsConstructor
