@@ -13,7 +13,7 @@ import org.example.expert.domain.log.entity.Log;
 import org.example.expert.domain.log.entity.LogType;
 import org.example.expert.domain.log.repository.LogRepository;
 import org.example.expert.global.common.ApiResponse;
-import org.example.expert.global.config.config.JwtUtil;
+import org.example.expert.global.config.JwtUtil;
 import org.example.expert.global.log.annotation.LogWrite;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;

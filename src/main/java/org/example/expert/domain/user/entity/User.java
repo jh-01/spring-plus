@@ -6,11 +6,16 @@ import lombok.NoArgsConstructor;
 import org.example.expert.domain.common.dto.AuthUser;
 import org.example.expert.domain.common.entity.Timestamped;
 import org.example.expert.domain.user.enums.UserRole;
+//import org.example.expert.global.config.CachingConfig;
+//import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 @Getter
 @Entity
 @NoArgsConstructor
 @Table(name = "users")
+//@Table(name = "users", indexes = @Index(name = "idx_nickname", columnList = "nickname", unique = true))
+//@Cacheable
+//@org.hibernate.annotations.Cache(region = CachingConfig.DB_CACHE, usage = CacheConcurrencyStrategy.READ_ONLY)
 public class User extends Timestamped {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

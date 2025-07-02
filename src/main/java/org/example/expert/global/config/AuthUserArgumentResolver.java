@@ -1,4 +1,4 @@
-package org.example.expert.global.config.config;
+package org.example.expert.global.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.example.expert.domain.auth.exception.AuthException;

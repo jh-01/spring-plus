@@ -22,6 +22,11 @@ public class UserController {
         return ResponseEntity.ok(userService.getUser(userId));
     }
 
+    @GetMapping("/users")
+    public ResponseEntity<UserResponse> getUserByName(@RequestParam String name) {
+        return ResponseEntity.ok(userService.getUserByName(name));
+    }
+
     @PutMapping("/users")
     public void changePassword(@RequestBody UserChangePasswordRequest userChangePasswordRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
