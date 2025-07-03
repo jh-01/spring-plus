@@ -22,6 +22,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -47,7 +48,7 @@ public class ManagerService {
         }
 
         for(int i = 0; i < todo.getManagers().size(); i++) {
-            if(todo.getManagers().get(i).getUser().getId() == managerSaveRequest.getManagerUserId()) {
+            if(Objects.equals(todo.getManagers().get(i).getId(), managerSaveRequest.getManagerUserId())) {
                 throw new CustomException(ErrorType.INVALID_REQUEST);
             }
         }

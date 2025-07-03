@@ -1,16 +1,12 @@
-package org.example.expert.domain.todo.dto.request;
+package org.example.expert.domain.todo.dto.request
 
-import lombok.Getter;
-import lombok.Setter;
-import java.time.LocalDateTime;
+import java.time.LocalDateTime
 
-@Getter
-@Setter
-public class TodoSearchRequest {
-    private int page = 1;
-    private int size = 10;
-    private String title;
-    private LocalDateTime since;
-    private LocalDateTime until;
-    private String managerName;
-}
+data class TodoSearchRequest(
+    val page: Int = 1,
+    val size: Int = 10,
+    val title: String? = null,
+    val since: LocalDateTime? = null,
+    val until: LocalDateTime? = null,
+    val managerName: String? = null
+)

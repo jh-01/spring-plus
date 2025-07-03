@@ -1,17 +1,6 @@
-package org.example.expert.domain.todo.dto.request;
+package org.example.expert.domain.todo.dto.request
 
-import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class TodoSaveRequest {
-
-    @NotBlank
-    private String title;
-    @NotBlank
-    private String contents;
-}
+data class TodoSaveRequest (
+    val title: String,
+    val contents: String
+)

@@ -2,7 +2,18 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.3.3'
     id 'io.spring.dependency-management' version '1.1.6'
-    id 'org.jetbrains.kotlin.jvm'
+
+    // Kotlin
+//    id 'org.jetbrains.kotlin.jvm' version '2.0.0'
+//    id 'org.jetbrains.kotlin.plugin.lombok' version '2.0.0'
+//    id 'org.jetbrains.kotlin.plugin.spring' version '2.0.0'
+//    id 'org.jetbrains.kotlin.plugin.jpa' version '2.0.0'
+//    id 'org.jetbrains.kotlin.kapt' version '2.0.0'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.24'
+    id 'org.jetbrains.kotlin.plugin.spring' version '1.9.24'
+    id 'org.jetbrains.kotlin.plugin.jpa' version '1.9.24'
+    id 'org.jetbrains.kotlin.plugin.lombok' version '1.9.24'
+    id 'org.jetbrains.kotlin.kapt' version '1.9.24'
 }
 
 group = 'org.example'
@@ -11,12 +22,6 @@ version = '0.0.1-SNAPSHOT'
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
-    }
-}
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
     }
 }
 
@@ -44,8 +49,12 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    // Security
+    // Kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "org.jetbrains.kotlin:kotlin-reflect"
+
+    // Bcrypt
     implementation 'at.favre.lib:bcrypt:0.10.2'
 
     // JWT
@@ -53,44 +62,51 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-    // QueryDSL
-    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
-    annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
-    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
-    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
-
-    // Hibernate 6 + JCache
-//    implementation 'org.hibernate.orm:hibernate-core:6.5.2.Final'
-//    implementation 'org.hibernate.orm:hibernate-jcache:6.5.2.Final'
-//    implementation 'org.ehcache:ehcache:3.8.1'
-//    implementation 'org.jboss:jandex:3.1.2'
-
-    implementation 'javax.persistence:javax.persistence-api:2.2'
+    // QueryDSL (Kotlin + kapt only)
+    implementation "com.querydsl:querydsl-jpa:5.0.0:jakarta"
+    kapt "com.querydsl:querydsl-apt:5.0.0:jakarta"
+    kapt "jakarta.annotation:jakarta.annotation-api"
+    kapt "jakarta.persistence:jakarta.persistence-api"
 }
 
+kapt {
+    keepJavacAnnotationProcessors = true
+    includeCompileClasspath = false
+}
+
+// QueryDSL Q파일 경로 설정
+def querydslDir = "$buildDir/generated/source/querydsl"
+sourceSets.main.java.srcDirs += querydslDir
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.annotationProcessorGeneratedSourcesDirectory = file(querydslDir)
+}
+
+clean {
+    delete file(querydslDir)
+}
+
+// Jandex (Hibernate 캐시 관련)
 configurations.all {
     resolutionStrategy {
         force 'org.jboss:jandex:3.1.2'
     }
 }
 
-// QueryDSL
-def querydslDir = "$buildDir/generated/querydsl"
-sourceSets {
-    main.java.srcDirs += [ querydslDir ]
-}
-tasks.withType(JavaCompile) {
-    options.getGeneratedSourceOutputDirectory().set(file(querydslDir))
-}
-clean {
-    delete file(querydslDir)
+// Kotlin all-open
+allOpen {
+    annotation("jakarta.persistence.Entity")
+    annotation("jakarta.persistence.Embeddable")
+    annotation("jakarta.persistence.MappedSuperclass")
 }
 
-// Test
+// Test 설정
 tasks.named('test') {
     useJUnitPlatform()
 }
-
-
-
-

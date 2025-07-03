@@ -1,130 +1,130 @@
-package org.example.expert.domain.todo.service;
+package org.example.expert.domain.todo.service
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.example.expert.domain.manager.dto.response.ManagerResponse;
-import org.example.expert.global.client.WeatherClient;
-import org.example.expert.domain.common.dto.AuthUser;
-import org.example.expert.domain.common.exception.InvalidRequestException;
-import org.example.expert.domain.manager.entity.Manager;
-import org.example.expert.domain.manager.repository.ManagerRepository;
-import org.example.expert.domain.todo.dto.request.TodoPageRequest;
-import org.example.expert.domain.todo.dto.request.TodoSaveRequest;
-import org.example.expert.domain.todo.dto.request.TodoSearchRequest;
-import org.example.expert.domain.todo.dto.response.TodoResponse;
-import org.example.expert.domain.todo.dto.response.TodoSaveResponse;
-import org.example.expert.domain.todo.dto.response.TodoSearchResponse;
-import org.example.expert.domain.todo.entity.Todo;
-import org.example.expert.domain.todo.repository.TodoRepository;
-import org.example.expert.domain.user.dto.response.UserResponse;
-import org.example.expert.domain.user.entity.User;
-import org.example.expert.domain.user.repository.UserRepository;
-import org.example.expert.global.exception.CustomException;
-import org.example.expert.global.exception.ErrorType;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
+import lombok.extern.slf4j.Slf4j
+import org.example.expert.domain.common.dto.AuthUser
+import org.example.expert.domain.manager.dto.response.ManagerResponse
+import org.example.expert.domain.manager.entity.Manager
+import org.example.expert.domain.manager.repository.ManagerRepository
+import org.example.expert.domain.todo.dto.request.TodoPageRequest
+import org.example.expert.domain.todo.dto.request.TodoSaveRequest
+import org.example.expert.domain.todo.dto.request.TodoSearchRequest
+import org.example.expert.domain.todo.dto.response.TodoResponse
+import org.example.expert.domain.todo.dto.response.TodoSaveResponse
+import org.example.expert.domain.todo.dto.response.TodoSearchResponse
+import org.example.expert.domain.todo.entity.Todo
+import org.example.expert.domain.todo.repository.TodoRepository
+import org.example.expert.domain.user.dto.response.UserResponse
+import org.example.expert.domain.user.entity.User
+import org.example.expert.domain.user.repository.UserRepository
+import org.example.expert.global.client.WeatherClient
+import org.example.expert.global.exception.CustomException
+import org.example.expert.global.exception.ErrorType
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.stereotype.Service
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
-@Transactional(readOnly = true)
-public class TodoService {
-
-    private final TodoRepository todoRepository;
-    private final UserRepository userRepository;
-    private final WeatherClient weatherClient;
-    private final ManagerRepository managerRepository;
-
-    public TodoSaveResponse saveTodo(AuthUser authUser, TodoSaveRequest todoSaveRequest) {
-        if(authUser.getId() == null) {
-            throw new IllegalStateException("AuthUser ID is null");
+class TodoService(
+    val todoRepository: TodoRepository,
+    val userRepository: UserRepository,
+    val weatherClient: WeatherClient,
+    val managerRepository: ManagerRepository
+) {
+    fun saveTodo(authUser: AuthUser, todosaveRequest: TodoSaveRequest): TodoSaveResponse {
+        if(authUser.id == null) {
+            throw IllegalStateException("AuthUser ID is null")
         }
-        log.info("authUser: {}", authUser);
-        log.info("todoSaveRequest: {}", todoSaveRequest);
-        User user = userRepository.findById(authUser.getId())
-                .orElseThrow(() -> new CustomException(ErrorType.USER_NOT_FOUND));
 
-        String weather = weatherClient.getTodayWeather();
+        var user: User = userRepository.findById(authUser.id)
+            .orElseThrow() {
+                IllegalStateException("User not found")
+        }
 
-        Todo newTodo = new Todo(
-                todoSaveRequest.getTitle(),
-                todoSaveRequest.getContents(),
-                weather,
-                user
-        );
-        Todo savedTodo = todoRepository.save(newTodo);
+        var weather: String = weatherClient.todayWeather
 
-        Manager manager = new Manager(user, savedTodo);
-        managerRepository.save(manager);
+        var todo: Todo = Todo(
+            todosaveRequest.title,
+            todosaveRequest.contents,
+            weather,
+            user
+        )
+        var savedTodo: Todo = todoRepository.save(todo)
 
-        return new TodoSaveResponse(
-                savedTodo.getId(),
-                savedTodo.getTitle(),
-                savedTodo.getContents(),
-                weather,
-                new UserResponse(user.getId(), user.getEmail(), user.getNickname())
-        );
+        var manager: Manager = Manager(user, savedTodo)
+        var savedManager: Manager = managerRepository.save(manager)
+
+        return TodoSaveResponse(
+            savedTodo.id,
+            savedTodo.title,
+            savedTodo.contents,
+            weather,
+            UserResponse(user.id, user.email, user.nickname),
+            listOf(ManagerResponse(savedManager.id!!, UserResponse(savedManager.user.id, savedManager.user.email, savedManager.user.nickname)))
+        )
     }
 
-    public Page<TodoResponse> getTodos(TodoPageRequest todoPageRequest) {
-        Pageable pageable = PageRequest.of(todoPageRequest.getPage() - 1, todoPageRequest.getSize());
+    fun getTodos(todoPageRequest: TodoPageRequest): Page<TodoResponse> {
+        val pageable: Pageable = PageRequest.of(todoPageRequest.page - 1, todoPageRequest.size)
 
-        Page<Todo> todos = todoRepository.findAllByOrderByModifiedAtDesc(pageable);
+        val todos : Page<Todo> = todoRepository.findAllByOrderByModifiedAtDesc(pageable)
 
-
-        return todos.map(todo -> new TodoResponse(
-                todo.getId(),
-                todo.getTitle(),
-                todo.getContents(),
-                todo.getWeather(),
-                new UserResponse(todo.getUser().getId(), todo.getUser().getEmail(), todo.getUser().getNickname()),
-                todo.getManagers().stream().map(
-                        manager -> new ManagerResponse(
-                                manager.getId(),
-                                new UserResponse (
-                                        manager.getUser().getId(),
-                                        manager.getUser().getEmail(),
-                                        manager.getUser().getNickname()
-                                )
+        return todos.map { todo ->
+            TodoResponse(
+                todo.id!!,
+                todo.title,
+                todo.contents,
+                todo.weather,
+                UserResponse(
+                    todo.user.id,
+                    todo.user.email,
+                    todo.user.nickname
+                ),
+                todo.managers.map { manager ->
+                    ManagerResponse(
+                        manager.id!!,
+                        UserResponse(
+                            manager.user.id,
+                            manager.user.email,
+                            manager.user.nickname
                         )
-                ).toList(),
-                todo.getCreatedAt(),
-                todo.getModifiedAt()
-        ));
+                    )
+                },
+                todo.createdAt,
+                todo.modifiedAt
+            )
+        }
     }
 
-    public TodoResponse getTodo(long todoId) {
-        Todo todo = todoRepository.findByIdWithUser(todoId)
-                .orElseThrow(() -> new CustomException(ErrorType.TODO_NOT_FOUND));
+    fun getTodo(todoId: Long): TodoResponse {
+        val todo: Todo = todoRepository.findByIdWithUser(todoId)
+            .orElseThrow() { CustomException(ErrorType.TODO_NOT_FOUND) }
 
-        User user = todo.getUser();
+        val user: User = todo.user
 
-        return new TodoResponse(
-                todo.getId(),
-                todo.getTitle(),
-                todo.getContents(),
-                todo.getWeather(),
-                new UserResponse(user.getId(), user.getEmail(), user.getNickname()),
-                todo.getManagers().stream().map(
-                        manager -> new ManagerResponse(
-                                manager.getId(),
-                                new UserResponse(manager.getUser().getId(), manager.getUser().getEmail(), manager.getUser().getNickname())
-                        )
-                ).toList(),
-                todo.getCreatedAt(),
-                todo.getModifiedAt()
-        );
+        return TodoResponse(
+            todo.id,
+            todo.title,
+            todo.contents,
+            todo.weather,
+            UserResponse(user.id, user.email, user.nickname),
+            todo.managers.map { manager ->
+                ManagerResponse(
+                    manager.id!!,
+                    UserResponse(manager.id, manager.user.email, manager.user.nickname)
+                )
+            },
+            todo.createdAt,
+            todo.modifiedAt
+        )
     }
 
-    public Page<TodoSearchResponse> searchTodos(TodoSearchRequest todoSearchRequest) {
-        Pageable pageable = PageRequest.of(todoSearchRequest.getPage() - 1, todoSearchRequest.getSize());
+    fun searchTodos(todoSearchRequest: TodoSearchRequest): Page<TodoSearchResponse> {
+        val pageable: Pageable = PageRequest.of(todoSearchRequest.page - 1, todoSearchRequest.size)
 
-        Page<TodoSearchResponse> todoResponsePage = todoRepository.findAllByOrderByModifiedAtDesc(pageable, todoSearchRequest);
-        return todoResponsePage;
+        return todoRepository.findAllByOrderByModifiedAtDesc(pageable, todoSearchRequest)
     }
+
+
 }

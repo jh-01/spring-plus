@@ -1,25 +1,10 @@
-package org.example.expert.domain.todo.dto.response;
+package org.example.expert.domain.todo.dto.response
 
-import com.querydsl.core.annotations.QueryProjection;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import org.example.expert.domain.todo.dto.request.TodoSearchRequest;
+import com.querydsl.core.annotations.QueryProjection
 
-@Getter
-@Setter
-@Builder
-public class TodoSearchResponse {
-    private Long id;
-    private String title;
-    private Long managerNum;
-    private Long commentNum;
-
-    @QueryProjection
-    public TodoSearchResponse(Long id, String title, Long managerNum, Long commentNum){
-        this.id = id;
-        this.title = title;
-        this.managerNum = managerNum;
-        this.commentNum = commentNum;
-    }
-}
+data class TodoSearchResponse @QueryProjection constructor(
+    val id: Long?,
+    val title: String?,
+    val managerNum: Long?,
+    val commentNum: Long?
+)
