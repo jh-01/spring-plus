@@ -68,7 +68,7 @@ class TodoService(
     fun getTodos(todoPageRequest: TodoPageRequest): Page<TodoResponse> {
         val pageable: Pageable = PageRequest.of(todoPageRequest.page - 1, todoPageRequest.size)
 
-        val todos : Page<Todo> = todoRepository.findAllByOrderByModifiedAtDesc(pageable)
+        val todos : Page<Todo> = todoRepository.findAll(pageable)
 
         return todos.map { todo ->
             TodoResponse(

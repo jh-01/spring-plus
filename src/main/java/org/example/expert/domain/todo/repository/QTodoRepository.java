@@ -13,5 +13,8 @@ import java.util.Optional;
 @Repository
 public interface QTodoRepository {
     public Optional<Todo> findByIdWithUser(@Param("todoId") Long todoId);
+
+    Page<Todo> findAll(Pageable pageable);
+
     public Page<TodoSearchResponse> findAllByOrderByModifiedAtDesc(Pageable pageable, TodoSearchRequest request);
 }

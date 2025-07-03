@@ -39,6 +39,29 @@ public class QTodoRepositoryImpl implements QTodoRepository {
     }
 
     @Override
+    public Page<Todo> findAll(Pageable pageable){
+        List<Todo> searchResult = queryFactory
+                .selectFrom(todo)
+                .leftJoin(todo.managers, manager)
+                .leftJoin(todo.comments, comment)
+                .groupBy(todo.id)
+                .orderBy(todo.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long total = queryFactory
+                .select(todo.countDistinct())
+                .from(todo)
+                .leftJoin(todo.managers, manager)
+                .leftJoin(todo.comments, comment)
+                .fetchOne();
+
+        return new PageImpl<>(searchResult, pageable, total != null ? total : 0);
+
+    }
+
+    @Override
     public Page<TodoSearchResponse> findAllByOrderByModifiedAtDesc(Pageable pageable, TodoSearchRequest request) {
         List<TodoSearchResponse> searchResult = queryFactory.select(
                 new QTodoSearchResponse(
