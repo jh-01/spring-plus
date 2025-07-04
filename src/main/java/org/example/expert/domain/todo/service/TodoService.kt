@@ -32,28 +32,34 @@ class TodoService(
     val weatherClient: WeatherClient,
     val managerRepository: ManagerRepository
 ) {
+    // Todo 저장
     fun saveTodo(authUser: AuthUser, todosaveRequest: TodoSaveRequest): TodoSaveResponse {
+        // 인증 유저가 없는 상태 확인하고 예외처리
         if(authUser.id == null) {
             throw IllegalStateException("AuthUser ID is null")
         }
 
-        var user: User = userRepository.findById(authUser.id)
+        // 해당 유저 조회
+        val user: User = userRepository.findById(authUser.id)
             .orElseThrow() {
                 IllegalStateException("User not found")
         }
 
-        var weather: String = weatherClient.todayWeather
+        // 현재 날씨 정보 가져오기
+        val weather: String = weatherClient.todayWeather
 
-        var todo: Todo = Todo(
+        // 받은 값으로 Todo 생성
+        val todo: Todo = Todo(
             todosaveRequest.title,
             todosaveRequest.contents,
             weather,
             user
         )
-        var savedTodo: Todo = todoRepository.save(todo)
+        val savedTodo: Todo = todoRepository.save(todo)
 
-        var manager: Manager = Manager(user, savedTodo)
-        var savedManager: Manager = managerRepository.save(manager)
+        // 매니저 생성
+        val manager: Manager = Manager(user, savedTodo)
+        val savedManager: Manager = managerRepository.save(manager)
 
         return TodoSaveResponse(
             savedTodo.id,
@@ -65,8 +71,9 @@ class TodoService(
         )
     }
 
+    // Todo 전체 페이징 조회
     fun getTodos(todoPageRequest: TodoPageRequest): Page<TodoResponse> {
-        val pageable: Pageable = PageRequest.of(todoPageRequest.page - 1, todoPageRequest.size)
+        val pageable: Pageable = PageRequest.of((todoPageRequest.page - 1).toInt(), todoPageRequest.size.toInt())
 
         val todos : Page<Todo> = todoRepository.findAll(pageable)
 
@@ -121,7 +128,7 @@ class TodoService(
     }
 
     fun searchTodos(todoSearchRequest: TodoSearchRequest): Page<TodoSearchResponse> {
-        val pageable: Pageable = PageRequest.of(todoSearchRequest.page - 1, todoSearchRequest.size)
+        val pageable: Pageable = PageRequest.of((todoSearchRequest.page - 1).toInt(), todoSearchRequest.size.toInt())
 
         return todoRepository.findAllByOrderByModifiedAtDesc(pageable, todoSearchRequest)
     }

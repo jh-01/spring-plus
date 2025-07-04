@@ -1,20 +1,15 @@
-package org.example.expert.domain.todo.repository;
+package org.example.expert.domain.todo.repository
 
-import org.example.expert.domain.todo.dto.request.TodoSearchRequest;
-import org.example.expert.domain.todo.dto.response.TodoSearchResponse;
-import org.example.expert.domain.todo.entity.Todo;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
+import org.example.expert.domain.todo.dto.request.TodoSearchRequest
+import org.example.expert.domain.todo.dto.response.TodoSearchResponse
+import org.example.expert.domain.todo.entity.Todo
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.query.Param
+import java.util.Optional
 
-import java.util.Optional;
-
-@Repository
-public interface QTodoRepository {
-    public Optional<Todo> findByIdWithUser(@Param("todoId") Long todoId);
-
-    Page<Todo> findAll(Pageable pageable);
-
-    public Page<TodoSearchResponse> findAllByOrderByModifiedAtDesc(Pageable pageable, TodoSearchRequest request);
+interface QTodoRepository {
+    fun findByIdWithUser(@Param("todoId") todoId: Long): Optional<Todo>
+    fun findAll(pageable: Pageable): Page<Todo>
+    fun findAllByOrderByModifiedAtDesc(pageable: Pageable, request: TodoSearchRequest): Page<TodoSearchResponse>
 }
