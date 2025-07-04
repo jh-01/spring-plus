@@ -24,6 +24,7 @@ public open class Todo(
 
     @Column(nullable = false)
     val title: String,
+
     @Column(nullable = false)
     val contents: String,
 
@@ -41,7 +42,6 @@ public open class Todo(
 
     ) : Timestamped() {
 
-
     constructor(_title: String, _contents: String, _weather: String, _user: User) : this(
         title = _title,
         contents = _contents,
@@ -49,6 +49,7 @@ public open class Todo(
         user = _user,
     )
 
+    // Q클래스 생성을 위한 생성자
     @QueryProjection
     constructor(_id: Long, _title: String, _contents: String, _weather: String, _user: User) : this(
         id = _id,
