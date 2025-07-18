@@ -1,111 +1,112 @@
-package org.example.expert.domain.manager.service;
+package org.example.expert.domain.manager.service
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.example.expert.domain.common.dto.AuthUser;
-import org.example.expert.domain.common.exception.InvalidRequestException;
-import org.example.expert.domain.manager.dto.request.ManagerSaveRequest;
-import org.example.expert.domain.manager.dto.response.ManagerResponse;
-import org.example.expert.domain.manager.dto.response.ManagerSaveResponse;
-import org.example.expert.domain.manager.entity.Manager;
-import org.example.expert.domain.manager.repository.ManagerRepository;
-import org.example.expert.domain.todo.entity.Todo;
-import org.example.expert.domain.todo.repository.TodoRepository;
-import org.example.expert.domain.user.dto.response.UserResponse;
-import org.example.expert.domain.user.entity.User;
-import org.example.expert.domain.user.repository.UserRepository;
-import org.example.expert.global.exception.CustomException;
-import org.example.expert.global.exception.ErrorType;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
+import jakarta.validation.Valid
+import lombok.RequiredArgsConstructor
+import lombok.extern.slf4j.Slf4j
+import org.example.expert.domain.common.dto.AuthUser
+import org.example.expert.domain.common.exception.InvalidRequestException
+import org.example.expert.domain.manager.dto.request.ManagerSaveRequest
+import org.example.expert.domain.manager.dto.response.ManagerResponse
+import org.example.expert.domain.manager.dto.response.ManagerSaveResponse
+import org.example.expert.domain.manager.entity.Manager
+import org.example.expert.domain.manager.repository.ManagerRepository
+import org.example.expert.domain.todo.repository.TodoRepository
+import org.example.expert.domain.user.dto.response.UserResponse
+import org.example.expert.domain.user.entity.User
+import org.example.expert.domain.user.repository.UserRepository
+import org.example.expert.global.exception.CustomException
+import org.example.expert.global.exception.ErrorType
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import org.springframework.util.ObjectUtils
+import java.util.function.Supplier
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class ManagerService {
-
-    private final ManagerRepository managerRepository;
-    private final UserRepository userRepository;
-    private final TodoRepository todoRepository;
+class ManagerService {
+    private val managerRepository: ManagerRepository? = null
+    private val userRepository: UserRepository? = null
+    private val todoRepository: TodoRepository? = null
+    private val log: Logger = LoggerFactory.getLogger(javaClass)
 
     @Transactional
-    public ManagerSaveResponse saveManager(AuthUser authUser, long todoId, ManagerSaveRequest managerSaveRequest) {
+    fun saveManager(authUser: AuthUser?, todoId: Long, managerSaveRequest: @Valid ManagerSaveRequest?): ManagerSaveResponse {
         // 일정을 만든 유저
-        User user = User.fromAuthUser(authUser);
-        Todo todo = todoRepository.findById(todoId)
-                .orElseThrow(() -> new InvalidRequestException("Todo not found"));
+        val user = User.fromAuthUser(authUser)
+        val todo = todoRepository!!.findById(todoId)
+            .orElseThrow<InvalidRequestException?>(Supplier { InvalidRequestException("Todo not found") })
 
-        log.info("user: {}", user);
-        log.info("userId: {}", user.getId());
-        if (todo.getUser() == null || !ObjectUtils.nullSafeEquals(user.getId(), todo.getUser().getId())) {
-            throw new CustomException(ErrorType.NOT_USER_OF_TODO);
+        log.info("user: {}", user)
+        log.info("userId: {}", user.getId())
+        if (todo.user == null || !ObjectUtils.nullSafeEquals(user.getId(), todo.user.getId())) {
+            throw CustomException(ErrorType.NOT_USER_OF_TODO)
         }
 
-        for(int i = 0; i < todo.getManagers().size(); i++) {
-            if(Objects.equals(todo.getManagers().get(i).getId(), managerSaveRequest.getManagerUserId())) {
-                throw new CustomException(ErrorType.INVALID_REQUEST);
+        for (i in todo.managers.indices) {
+            if (todo.managers[i].id == managerSaveRequest?.getManagerUserId()) {
+                throw CustomException(ErrorType.INVALID_REQUEST)
             }
         }
 
-        User managerUser = userRepository.findById(managerSaveRequest.getManagerUserId())
-                .orElseThrow(() -> new CustomException(ErrorType.USER_NOT_FOUND));
+        val managerUser = userRepository!!.findById(managerSaveRequest?.getManagerUserId())
+            .orElseThrow<CustomException?>(Supplier { CustomException(ErrorType.USER_NOT_FOUND) })
 
         if (ObjectUtils.nullSafeEquals(user.getId(), managerUser.getId())) {
-            throw new CustomException(ErrorType.OWNER_OF_TODO);
+            throw CustomException(ErrorType.OWNER_OF_TODO)
         }
 
-        Manager newManagerUser = new Manager(managerUser, todo);
-        Manager savedManagerUser = managerRepository.save(newManagerUser);
+        val newManagerUser = Manager(managerUser, todo)
+        val savedManagerUser = managerRepository!!.save<Manager?>(newManagerUser)
 
-        log.info("savedManagerUser: {}", savedManagerUser);
+        log.info("savedManagerUser: {}", savedManagerUser)
 
-        return new ManagerSaveResponse(
-                savedManagerUser.getId(),
-                new UserResponse(managerUser.getId(), managerUser.getEmail(), user.getNickname())
-        );
+        return ManagerSaveResponse(
+            savedManagerUser.getId(),
+            UserResponse(managerUser.getId(), managerUser.getEmail(), user.getNickname())
+        )
     }
 
-    public List<ManagerResponse> getManagers(long todoId) {
-        Todo todo = todoRepository.findById(todoId)
-                .orElseThrow(() -> new CustomException(ErrorType.TODO_NOT_FOUND));
+    fun getManagers(todoId: Long): MutableList<ManagerResponse?> {
+        val todo = todoRepository!!.findById(todoId)
+            .orElseThrow<CustomException?>(Supplier { CustomException(ErrorType.TODO_NOT_FOUND) })
 
-        List<Manager> managerList = managerRepository.findByTodoIdWithUser(todo.getId());
+        val managerList = managerRepository!!.findByTodoIdWithUser(todo.id)
 
-        List<ManagerResponse> dtoList = new ArrayList<>();
-        for (Manager manager : managerList) {
-            User user = manager.getUser();
-            dtoList.add(new ManagerResponse(
+        val dtoList: MutableList<ManagerResponse?> = ArrayList<ManagerResponse?>()
+        for (manager in managerList) {
+            val user = manager.getUser()
+            dtoList.add(
+                ManagerResponse(
                     manager.getId(),
-                    new UserResponse(user.getId(), user.getEmail(), user.getNickname())
-            ));
+                    UserResponse(user.getId(), user.getEmail(), user.getNickname())
+                )
+            )
         }
-        return dtoList;
+        return dtoList
     }
 
     @Transactional
-    public void deleteManager(AuthUser authUser, long todoId, long managerId) {
-        User user = User.fromAuthUser(authUser);
+    fun deleteManager(authUser: AuthUser?, todoId: Long, managerId: Long) {
+        val user = User.fromAuthUser(authUser)
 
-        Todo todo = todoRepository.findById(todoId)
-                .orElseThrow(() -> new CustomException(ErrorType.TODO_NOT_FOUND));
+        val todo = todoRepository!!.findById(todoId)
+            .orElseThrow<CustomException?>(Supplier { CustomException(ErrorType.TODO_NOT_FOUND) })
 
-        if (todo.getUser() == null || !ObjectUtils.nullSafeEquals(user.getId(), todo.getUser().getId())) {
-            throw new CustomException(ErrorType.HAVE_NO_AUTHORITY_OF_TODO);
+        if (todo.user == null || !ObjectUtils.nullSafeEquals(user.getId(), todo.user.getId())) {
+            throw CustomException(ErrorType.HAVE_NO_AUTHORITY_OF_TODO)
         }
 
-        Manager manager = managerRepository.findById(managerId)
-                .orElseThrow(() -> new CustomException(ErrorType.MANAGER_NOT_FOUND));
+        val manager = managerRepository!!.findById(managerId)
+            .orElseThrow<CustomException?>(Supplier { CustomException(ErrorType.MANAGER_NOT_FOUND) })
 
-        if (!ObjectUtils.nullSafeEquals(todo.getId(), manager.getTodo().getId())) {
-            throw new CustomException(ErrorType.HAVE_NO_AUTHORITY_OF_TODO);
+        if (!ObjectUtils.nullSafeEquals(todo.id, manager.getTodo().id)) {
+            throw CustomException(ErrorType.HAVE_NO_AUTHORITY_OF_TODO)
         }
 
-        managerRepository.delete(manager);
+        managerRepository.delete(manager)
     }
 }

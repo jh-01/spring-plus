@@ -12,8 +12,8 @@ import org.example.expert.domain.user.enums.UserRole;
 @Getter
 @Entity
 @NoArgsConstructor
-@Table(name = "users")
-//@Table(name = "users", indexes = @Index(name = "idx_nickname", columnList = "nickname", unique = true))
+//@Table(name = "users")
+@Table(name = "users", indexes = @Index(name = "idx_nickname", columnList = "nickname", unique = true))
 //@Cacheable
 //@org.hibernate.annotations.Cache(region = CachingConfig.DB_CACHE, usage = CacheConcurrencyStrategy.READ_ONLY)
 public class User extends Timestamped {
